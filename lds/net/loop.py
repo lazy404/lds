@@ -48,9 +48,11 @@ class NetLoopThread(threading.Thread):
 
 	    if cmd == PREPARE_VIDEO:
 		print 'got prepare', optstr
-		self.vt=OmxPlayerThread(str(optstr))
+		self.vt=OmxPlayerThread(optstr[0])
 		self.vt.start()
+		print 'waiting'
 		self.vt.wait_ready()
+		print 'waiting done'
 
 	    if cmd == RUN_VIDEO:
 		print 'got run'

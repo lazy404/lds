@@ -34,7 +34,7 @@ class OmxPlayerThread(threading.Thread):
         epoll.register(p.stdout.fileno(), select.EPOLLIN)
         events = epoll.poll(100)
 
-        p.stdout.readline()
+        print p.stdout.readline()
         self.lready.release()
 
         self.lgo.acquire()
