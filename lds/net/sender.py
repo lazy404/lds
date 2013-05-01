@@ -42,12 +42,16 @@ class SenderThread(threading.Thread):
 if __name__ == '__main__':
     s=SenderThread('225.0.0.2', 2000)
     s.start()
-
+    from lds.net.proto import *
     q=s.get_queue()
-    q.put((1,'ass'))
-    q.join()
-    for i in range(10):
-        q.put((i,'dupa'*i))
+    f="/usr/src/test.h264"
+    #for i in range(100):
+    i=1
+    if True:
+        q.put((0,struct.pack("!iBBBBB%ds" % len(f),VERSION,i,PREPARE_VIDEO,0,VIDEO_FULLSCREEN,len(f),f)))
         q.join()
         time.sleep(2)
+        q.put((1,struct.pack("!iBBBBB",VERSION,i,RUN_VIDEO,0,VIDEO_FULLSCREEN,0)))
+        q.join()
+
     s.end()
