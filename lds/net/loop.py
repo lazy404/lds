@@ -18,7 +18,7 @@ class NetLoopThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.want_end=False
-	self.hfmt='!BBBBBB'
+	self.hfmt='!iBBBBB'
 	self.hlen=struct.calcsize(self.hfmt)
     
     def end(self):
@@ -47,11 +47,13 @@ class NetLoopThread(threading.Thread):
 		optstr=False
 
 	    if cmd == PREPARE_VIDEO:
-		self.vt=OmxPlayerThread(optstr)
+		print 'got prepare', optstr
+		self.vt=OmxPlayerThread(str(optstr))
 		self.vt.start()
 		self.vt.wait_ready()
 
 	    if cmd == RUN_VIDEO:
+		print 'got run'
 		self.vt.play_video()
 		self.vt.wait_ready()
 
