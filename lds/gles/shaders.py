@@ -2,13 +2,18 @@ from shortcrust.shader import ShaderProgram
 from shortcrust.buffer import AttributeBuffer
 from shortcrust.gl2 import *
 
-class PlasmaShader(ShaderProgram):
+class TexShader(ShaderProgram):
 	# A 'do nothing' vertex shader that simply passes vertex positions through to screen coordinates.
 	vertex_shader = """
 		attribute vec4 vPosition;
+		//attribute vec2 aTexturePosition;
+
+                varying vec2 vTextureCoord;
+
 		void main()
 		{
 			gl_Position = vPosition;
+			//vTextureCoord = aTexturePosition;
 		}
 	"""
 
@@ -17,39 +22,61 @@ class PlasmaShader(ShaderProgram):
 #ifdef GLES2
 		precision mediump float;
 #endif
+                varying vec2 vTextureCoord;
 
 		uniform float time;
+		uniform float pos;
 		uniform vec2 resolution;
+
+		uniform sampler2D tex0;
+		uniform sampler2D tex1;
 
 		void main( void ) {
 
 			vec2 position = ( gl_FragCoord.xy / resolution.xy );
 
-			float color = 0.0;
-			color += sin( position.x * cos( time / 15.0 ) * 80.0 ) + cos( position.y * cos( time / 15.0 ) * 10.0 );
-			color += sin( position.y * sin( time / 10.0 ) * 40.0 ) + cos( position.x * sin( time / 25.0 ) * 40.0 );
-			color += sin( position.x * sin( time / 5.0 ) * 10.0 ) + sin( position.y * sin( time / 35.0 ) * 80.0 );
-			color *= sin( time / 10.0 ) * 0.5;
+			//if ( time < 2.0)
+			//    gl_FragColor = texture2D(tex0, position);
+			//else 
+			//    gl_FragColor = texture2D(tex1, position);
 
-			gl_FragColor = vec4( vec3( color, color * 0.5, sin( color + time / 3.0 ) * 0.75 ), 1.0 );
+			gl_FragColor = mix(texture2D(tex0, position), texture2D(tex1, position), pos);
 
 		}
 	"""
 
 	def __init__(self):
-		super(PlasmaShader, self).__init__()
+		super(TexShader, self).__init__()
 
 		# Retrieve the locations of the position, time and resolution attributes / uniforms
 		# so that we can push values to them later
 		self.attr_vposition = self.get_attrib('vPosition')
+		#self.aTexturePosition = self.get_attrib('aTexturePosition')
+
 		self.unif_time = self.get_uniform('time')
+		self.unif_pos = self.get_uniform('pos')
+
 		self.unif_resolution = self.get_uniform('resolution')
 
+		self.utex0 = self.get_uniform('tex0')
+		self.utex1 = self.get_uniform('tex1')
+
+	def set_tex0(self, value):
+		glUniform1i(self.utex0, value)
+
+	def set_tex1(self, value):
+		glUniform1i(self.utex1, value)
+	
 	def set_time(self, value):
 		"""
 			Set the 'time' uniform within the shader
 		"""
 		glUniform1f(self.unif_time, value)
+	def set_pos(self, value):
+		"""
+			Set the 'time' uniform within the shader
+		"""
+		glUniform1f(self.unif_pos, value)
 
 	def set_resolution(self, width, height):
 		"""
@@ -57,21 +84,8 @@ class PlasmaShader(ShaderProgram):
 		"""
 		glUniform2f(self.unif_resolution, width, height)
 
-	def draw(self, model):
-		"""
-			Render the passed model (i.e. anything with a 'positions' buffer that can be bound
-			to the vPosition attribute, and a 'draw' method that pushes the triangles to GL)
-			via this shader.
-		"""
-		model.positions.attach(self.attr_vposition)
-		model.draw()
-
-class PlasmaShader2(PlasmaShader):
+class PlasmaShader2(TexShader):
 	fragment_shader = """
-#ifdef GLES2
-		precision mediump float;
-#endif
-
 		uniform float time;
 		uniform vec2 resolution;
 

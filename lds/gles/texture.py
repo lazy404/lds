@@ -53,8 +53,8 @@ class Texture(object):
 	try:
 	    if not self.texture_ready:
 		self.load_texture()
-
-	    glActiveTexture(GL_TEXTURE0+texture_index)
+	    print 'activating', self.filename, self.texture_id, 'as', texture_index, GL_TEXTURE0+texture_index
+	    glActiveTexture(GL_TEXTURE0 + texture_index)
             glBindTexture(GL_TEXTURE_2D, self.texture_id)
 	    self.texture_index=texture_index
 	    print 'activated texture (%dx%d) %d as %d' % (self.w, self.h, self.texture_id, self.texture_index)
@@ -64,7 +64,7 @@ class Texture(object):
 
     def unload(self):
     	glDeleteTextures(self.texture_id)
-	self.glid=-1
+	self.texture_index=-1
 	self.texture_ready=False
 
 if __name__ == '__main__':

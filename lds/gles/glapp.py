@@ -21,6 +21,9 @@ class GLApp(threading.Thread):
 	self.egl=EGL(depthbuffer=True)
 	self.w=self.egl.width
 	self.h=self.egl.height
+	glClearColor(0.0, 1.0, 0.0, 1.0)
+	glClear(GL_COLOR_BUFFER_BIT)
+	self.egl.swap_buffers()
 
     def end(self):
 	self.want_end=True
@@ -28,10 +31,6 @@ class GLApp(threading.Thread):
     def run(self):
 	egl=self.egl
 
-	glClearColor(0.0, 1.0, 0.0, 1.0)
-	glClear(GL_COLOR_BUFFER_BIT)
-	egl.swap_buffers()
-	sleep(4)
 
 	while not self.want_end:
 	    tl=self.timeline.get_nowait()
@@ -62,16 +61,23 @@ if __name__ == '__main__':
     s=GLApp(tl, ev)
 
     from lds.gles.shaders import *
-    ps=PlasmaShader()
-    ps2=PlasmaShader2()
+    from lds.gles.texture import *
 
-    pl=Effect2D('plasma', s.w, s.h, 5.0,ps)
+    ps=TexShader()
+    #ps2=PlasmaShader2()
+    t0=Texture('tex1.png')
+    t0.activate(0)
+    t1=Texture('tex2.png')
+    t1.activate(1)
 
-    pl2=Effect2D('plasma2', s.w, s.h, 10.0,ps2)
+    pl=Effect2D('plasma', s.w, s.h, 10.0,ps, [t1,t0])
+
+    pl2=Effect2D('plasma2', s.w, s.h, 5.0, ps, [t0,t1])
 
     tl.put(pl)
     tl.put(pl2)
 
+    #s.start()
     s.run()
 
 
