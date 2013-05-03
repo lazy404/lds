@@ -9,10 +9,15 @@ class Texture(object):
 	self.filename=filename
 	self.data_ready=False
 	self.texture_ready=False
+	self.texture_id=-1
+	self.texture_index=-1
 
     def load_data(self):
 	try:
-    	    print "loading", self.filename
+	    print 'load_data', str(self)
+	    if self.data_ready:
+		print 'already loaded'
+		return
 
 	    self.texture_id=glGenTextures(1)
 
@@ -39,6 +44,7 @@ class Texture(object):
 	try:
 	    if not self.data_ready:
 		self.load_data()
+	    print 'load texture', str(self)
     	    glBindTexture(GL_TEXTURE_2D, self.texture_id)
 	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
     	    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
@@ -53,11 +59,11 @@ class Texture(object):
 	try:
 	    if not self.texture_ready:
 		self.load_texture()
-	    print 'activating', self.filename, self.texture_id, 'as', texture_index, GL_TEXTURE0+texture_index
+
 	    glActiveTexture(GL_TEXTURE0 + texture_index)
             glBindTexture(GL_TEXTURE_2D, self.texture_id)
 	    self.texture_index=texture_index
-	    print 'activated texture (%dx%d) %d as %d' % (self.w, self.h, self.texture_id, self.texture_index)
+	    print 'activated texture %s (%dx%d) %d as %d' % (self.filename, self.w, self.h, self.texture_id, self.texture_index)
 
 	except Exception, e:
 	    print self, 'error in activate', e
@@ -66,6 +72,12 @@ class Texture(object):
     	glDeleteTextures(self.texture_id)
 	self.texture_index=-1
 	self.texture_ready=False
+
+    def __str__(self):
+	return 'Texture(%s) %d as %d' % (self.filename, self.texture_id, self.texture_index)
+
+    def __repr__(self):
+	return str(self)
 
 if __name__ == '__main__':
     from shortcrust.raspi.egl import EGL

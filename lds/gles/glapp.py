@@ -31,7 +31,6 @@ class GLApp(threading.Thread):
     def run(self):
 	egl=self.egl
 
-
 	while not self.want_end:
 	    tl=self.timeline.get_nowait()
 	    tl.activate(self.w, self.h)
@@ -45,10 +44,10 @@ class GLApp(threading.Thread):
 		tl.draw(now-start_time)
 		egl.swap_buffers()
 		frames+=1
-		old=now
+		#old=now
 		now=time()
-		if frames % 5 == 0:
-		    print '%d' % int(1.0/(now-old))
+		#if frames % 5 == 0:
+		#    print '%d' % int(1.0/(now-old))
 
 	    print tl.name, 'done %d frames in %s seconds %d fps' % (frames, now-start_time, int(frames/(now-start_time)))
 
@@ -56,7 +55,6 @@ class GLApp(threading.Thread):
 if __name__ == '__main__':
     tl=Queue.Queue()
     ev=Queue.Queue()
-    
 
     s=GLApp(tl, ev)
 
@@ -64,24 +62,28 @@ if __name__ == '__main__':
     from lds.gles.texture import *
 
     ps=TexShader()
-    #ps2=PlasmaShader2()
+
     t0=Texture('tex1.png')
     t0.activate(0)
+    t0.load_texture()
+
     t1=Texture('tex2.png')
+    t1.load_texture()
     t1.activate(1)
 
-    pl=Effect2D('plasma', s.w, s.h, 10.0,ps, [t1,t0])
+    t2=Texture('tex3.jpg')
+    t2.load_texture()
+    t2.activate(2)
 
-    pl2=Effect2D('plasma2', s.w, s.h, 5.0, ps, [t0,t1])
-
-    tl.put(pl)
-    tl.put(pl2)
+    tl.put(Effect2D('plasma', s.w, s.h, 4.0,ps, [t0,t1]))
+    tl.put(Pause(4.0))
+    tl.put(Effect2D('plasma2', s.w, s.h, 5.0, ps, [t1,t2]))
+    tl.put(Pause(1.0))
+    tl.put(Effect2D('plasma3', s.w, s.h, 5.0, ps, [t2,t0]))
 
     #s.start()
     s.run()
 
 
     raw_input('end ?')
-    #ev.put('ev')
-    #sleep(3)
     s.end()

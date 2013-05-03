@@ -4,6 +4,18 @@
 from shortcrust.shader import ShaderProgram
 from shortcrust.buffer import AttributeBuffer
 from shortcrust.gl2 import *
+from time import sleep
+
+class Pause(object):
+    def __init__(self, tlen):
+	self.tlen=tlen
+	self.name='Pause(%f)' % tlen
+
+    def draw(self, time):
+	sleep(self.tlen)
+
+    def activate(self, w, h):
+	pass
 
 class Effect2D(object):
     def __init__(self, name, w ,h, tlen, shader, textures= []):
@@ -16,6 +28,7 @@ class Effect2D(object):
 	self.textures=textures
 
     def activate(self, w, h):
+	print 'activating',self.name, self.textures
 	self.w=w
 	self.h=h
 
@@ -39,6 +52,6 @@ class Effect2D(object):
 
 	#self.shader.use()
 	self.shader.set_time(time)
-	self.shader.set_pos(time/self.tlen)
+	self.shader.set_pos(0.1+time/self.tlen)
 
 	glDrawArrays(GL_TRIANGLE_STRIP, self.shader.attr_vposition, self.vertex_count)
