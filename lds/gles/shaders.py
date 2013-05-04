@@ -41,12 +41,12 @@ class TexShader(ShaderProgram):
 			//    gl_FragColor = texture2D(tex1, position);
 
 			gl_FragColor = mix(texture2D(tex0, position), texture2D(tex1, position), pos);
-
 		}
 	"""
 
-	def __init__(self):
-		super(TexShader, self).__init__()
+	def activate(self):
+		super(TexShader, self).activate()
+		print 'lazy activate'
 
 		# Retrieve the locations of the position, time and resolution attributes / uniforms
 		# so that we can push values to them later
@@ -60,6 +60,7 @@ class TexShader(ShaderProgram):
 
 		self.utex0 = self.get_uniform('tex0')
 		self.utex1 = self.get_uniform('tex1')
+		self.active=True
 
 	def set_tex0(self, value):
 		glUniform1i(self.utex0, value)

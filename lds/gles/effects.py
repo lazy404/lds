@@ -18,7 +18,7 @@ class Pause(object):
 	pass
 
 class Effect2D(object):
-    def __init__(self, name, w ,h, tlen, shader, textures= []):
+    def __init__(self, name, tlen, shader, textures= []):
 	self.name= name
 	self.model= AttributeBuffer([(-1, -1, 0), (-1, 1, 0), (1, -1, 0), (1, 1, 0)])
 	self.model_texture_positions= AttributeBuffer([(-1, -1), (-1, 1), (1, -1), (1, 1)])
@@ -51,6 +51,8 @@ class Effect2D(object):
 	#    self.shader.set_tex0(2)
 
 	#self.shader.use()
+	#print self.name, 'got time', self.tlen, time
+
 	self.shader.set_time(time)
 	self.shader.set_pos(0.1+time/self.tlen)
 

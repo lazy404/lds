@@ -8,7 +8,7 @@ import struct
 import socket
 import sys
 import threading, Queue
-from shortcrust.raspi.egl import EGL
+from shortcrust.raspi.egl import EGL, opengles, openegl, eglints
 
 from lds.gles.effects import *
 
@@ -18,22 +18,31 @@ class GLApp(threading.Thread):
 	self.timeline=timeline
 	self.event=event
 	self.want_end=False
-	self.egl=EGL(depthbuffer=True)
-	self.w=self.egl.width
-	self.h=self.egl.height
-	glClearColor(0.0, 1.0, 0.0, 1.0)
-	glClear(GL_COLOR_BUFFER_BIT)
-	self.egl.swap_buffers()
 
     def end(self):
 	self.want_end=True
 
-    def run(self):
-	egl=self.egl
+    def run(self, egl):
+
+	#self.egl=EGL(depthbuffer=True)
+	#egl=self.egl
+	self.egl=egl
+	#egl=self.egl
+
+	self.w=self.egl.width
+	self.h=self.egl.height
+
+	glClearColor(0.8, 1.0, 0.0, 1.0)
+	glClear(GL_COLOR_BUFFER_BIT)
+	egl.swap_buffers()
 
 	while not self.want_end:
-	    tl=self.timeline.get_nowait()
+	    print 'waiting for effect ...'
+	    tl=self.timeline.get()
+	    print "doing: ", tl
+	    s=time()
 	    tl.activate(self.w, self.h)
+	    print 'activate time', time()-s
 
 	    start_time=time()
 	    end_time=start_time+tl.tlen
@@ -42,9 +51,15 @@ class GLApp(threading.Thread):
 
 	    while now <= end_time:
 		tl.draw(now-start_time)
-		egl.swap_buffers()
+		#if frames == 0:
+		#    pass
+		#    #sleep(2)
+		#else:
+		if frames != 0:
+		    egl.swap_buffers()
+
 		frames+=1
-		#old=now
+		old=now
 		now=time()
 		#if frames % 5 == 0:
 		#    print '%d' % int(1.0/(now-old))
@@ -56,7 +71,14 @@ if __name__ == '__main__':
     tl=Queue.Queue()
     ev=Queue.Queue()
 
+    egl=EGL(depthbuffer=True)
+
     s=GLApp(tl, ev)
+    s.w=1080
+    s.h=1920
+    #s.start()
+
+    #sleep(3)
 
     from lds.gles.shaders import *
     from lds.gles.texture import *
@@ -64,26 +86,26 @@ if __name__ == '__main__':
     ps=TexShader()
 
     t0=Texture('tex1.png')
-    t0.activate(0)
-    t0.load_texture()
+    t0.load_data()
 
     t1=Texture('tex2.png')
-    t1.load_texture()
-    t1.activate(1)
+    t1.load_data()
 
     t2=Texture('tex3.jpg')
-    t2.load_texture()
-    t2.activate(2)
+    t2.load_data()
 
-    tl.put(Effect2D('plasma', s.w, s.h, 4.0,ps, [t0,t1]))
-    tl.put(Pause(4.0))
-    tl.put(Effect2D('plasma2', s.w, s.h, 5.0, ps, [t1,t2]))
+    tl.put(Effect2D('0-1', 4.0, ps, [t0,t1]))
     tl.put(Pause(1.0))
-    tl.put(Effect2D('plasma3', s.w, s.h, 5.0, ps, [t2,t0]))
+    tl.put(Effect2D('1-2', 5.0, ps, [t1,t2]))
+    tl.put(Pause(1.0))
+    tl.put(Effect2D('2-0', 5.0, ps, [t2,t0]))
+    tl.put(Pause(1.0))
+    tl.put(Effect2D('0-1', 4.0, ps, [t0,t1]))
+    tl.put(Pause(1.0))
+    tl.put(Effect2D('1-2', 5.0, ps, [t1,t2]))
+    tl.put(Pause(1.0))
+    tl.put(Effect2D('2-0', 5.0, ps, [t2,t0]))
 
-    #s.start()
-    s.run()
-
-
+    s.run(egl)
     raw_input('end ?')
     s.end()
