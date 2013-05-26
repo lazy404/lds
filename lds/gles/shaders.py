@@ -77,6 +77,7 @@ class TexShader(ShaderProgram):
 		"""
 			Set the 'time' uniform within the shader
 		"""
+		#print 'set pos', value
 		glUniform1f(self.unif_pos, value)
 
 	def set_resolution(self, width, height):
@@ -85,24 +86,51 @@ class TexShader(ShaderProgram):
 		"""
 		glUniform2f(self.unif_resolution, width, height)
 
-class PlasmaShader2(TexShader):
+class WrapShader(TexShader):
 	fragment_shader = """
-		uniform float time;
-		uniform vec2 resolution;
+#ifdef GLES2
+	precision highp float;
 
-		void main( void ) {
+#endif
+        varying vec2 vTextureCoord;
 
-			vec2 position = ( gl_FragCoord.xy / resolution.xy );
+	uniform float time;
+	uniform float pos;
+	uniform vec2 resolution;
+	uniform sampler2D tex0;
+	uniform sampler2D tex1;
 
-			float color = 0.0;
-			color += sin( position.x * cos( time / 15.0 ) * 80.0 ) + cos( position.y * cos( time / 15.0 ) * 10.0 );
-			color += sin( position.y * sin( time / 10.0 ) * 40.0 ) + cos( position.x * sin( time / 25.0 ) * 40.0 );
-			color += sin( position.x * sin( time / 5.0 ) * 10.0 ) + sin( position.y * sin( time / 35.0 ) * 80.0 );
-			color *= sin( time / 10.0 ) * 0.5;
+	void main(void) {
+	    float a,b;
+	    float position = ( gl_FragCoord.y / resolution.y );
+	    float positionx = ( gl_FragCoord.x / resolution.x );
 
-			gl_FragColor = vec4( vec3( color*0.5, color, sin( color + time / 3.0 ) * 0.75 ), 1.0 );
+	    float move=0.2*pos;
 
-		}
+            if( position > move) {
+        	a=1.0/(1.0-move);
+        	b=-move*a;
+        	gl_FragColor = texture2D( tex0, vec2(positionx, a*position+b));
+		//gl_FragColor= vec4(0.,0.9,0.,1.);
+
+    	    } else {
+        	gl_FragColor= vec4(0.,0.,0.,1.);
+	    }
+
+/*	    if(gl_FragCoord.y == 1536.0) {
+        	gl_FragColor= vec4(1.,0.,0.,1.);
+	    }
+
+	    if(gl_FragCoord.y == 384.0) {
+        	gl_FragColor= vec4(0.,1.,0.,1.);
+	    }
+
+
+	    if(gl_FragCoord.x == 100.0) {
+        	gl_FragColor= vec4(1.,1.,0.,1.);
+	    }
+*/
+	}
 	"""
 
 

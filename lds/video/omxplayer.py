@@ -2,13 +2,17 @@ import subprocess, threading, time, select
 
 
 class OmxPlayerThread(threading.Thread):
-    def __init__(self, video):
+    def __init__(self, video, x1, y1, x2, y2):
         threading.Thread.__init__(self)
         self.video=video
         self.lready=threading.Lock()
         self.lgo=threading.Lock()
         self.lgo.acquire()
         self.lready.acquire()
+	if x1 + y1 +x2 + y2 > 0:
+	    self.opts=['--win', '%d %d %d %d' % (x1,y1,x2,y2)]
+	else:
+	    self.opts=[]
 
     def get_queue(self):
         return self.inq
@@ -28,7 +32,8 @@ class OmxPlayerThread(threading.Thread):
         return True
 
     def run(self):
-        p=subprocess.Popen(['/usr/bin/omxplayer.bin', '-w', self.video], stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=False, env={'LD_LIBRARY_PATH':'/opt/vc/lib:/usr/lib/omxplayer'})
+	
+        p=subprocess.Popen(['/usr/src/omxplayer/omxplayer.bin','-p'] + self.opts + [self.video], stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=False, env={'LD_LIBRARY_PATH':'/opt/vc/lib:/usr/src/omxplayer/ffmpeg_compiled/usr/local/lib/:/usr/lib/omxplayer'})
 
         epoll = select.epoll()
         epoll.register(p.stdout.fileno(), select.EPOLLIN)
@@ -50,7 +55,7 @@ class OmxPlayerThread(threading.Thread):
 
 if __name__ == '__main__':
     x=time.time()
-    s=OmxPlayerThread('/usr/src/test.h264')
+    s=OmxPlayerThread('/usr/src/test.h264', 0, 1536, 1080, 1920)
     s.start()
     s.wait_ready()
     y=time.time()

@@ -47,6 +47,7 @@ class Texture(object):
 
 	    self.texture_id=glGenTextures(1)
 
+	    glActiveTexture(GL_TEXTURE0 + 5)
     	    glBindTexture(GL_TEXTURE_2D, self.texture_id)
 	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
     	    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
