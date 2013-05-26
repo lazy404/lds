@@ -1,0 +1,2 @@
+export PYTHONPATH=/usr/src/lds:/usr/src/lazy/shortcrust/
+python glapp.py
